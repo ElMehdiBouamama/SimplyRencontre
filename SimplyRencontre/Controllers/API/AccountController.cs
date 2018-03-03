@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using SimplyRencontre.Models;
 
 namespace SimplyRencontre.Controllers.API
@@ -17,7 +20,7 @@ namespace SimplyRencontre.Controllers.API
     }
 
     [Produces("application/json")]
-    [Route("api/Account")]
+    [Route("api/[controller]")]
     public class AccountController : Controller
     {
         readonly UserManager<ApplicationUser> userManager;
@@ -29,7 +32,13 @@ namespace SimplyRencontre.Controllers.API
             this.signinManager = signinManager;
         }
 
-        [HttpPost]
+        // TODO: move security credentials from register to secure files
+        /// <summary>
+        /// Register function for user we should move the security key to a specific file
+        /// </summary>
+        /// <param name="credentials">Email and structure of the user who wants to register</param>
+        /// <returns>Credential Token</returns>
+        [HttpPost("[action]")]
         public async Task<IActionResult> Register([FromBody] Credentials credentials)
         {
             var user = new ApplicationUser { UserName = credentials.Email, Email = credentials.Email };
@@ -41,7 +50,16 @@ namespace SimplyRencontre.Controllers.API
             }
             await signinManager.SignInAsync(user, isPersistent: false);
 
-            var jwt = new JwtSecurityToken();
+            // TODO: We will have 1 claim per protected data page, so we need a claim factory with the abstract factory design pattern
+            var claims = new Claim[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id)
+            };
+
+            var signinKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("This is the secret password for the application"));
+            var signinCredentials = new SigningCredentials(signinKey, SecurityAlgorithms.HmacSha256);
+
+            var jwt = new JwtSecurityToken(signingCredentials: signinCredentials, claims: claims);
             return Ok(new JwtSecurityTokenHandler().WriteToken(jwt));
         }
     }

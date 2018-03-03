@@ -7,7 +7,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.SpaServices.Webpack;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,11 +39,15 @@ namespace SimplyRencontre
                     .AllowAnyOrigin();
             }));
 
-            services.AddDbContext<UserDbContext>();
+            services
+                .AddEntityFrameworkInMemoryDatabase()
+                .AddDbContext<UserDbContext>((p, b) => b
+                    .UseInMemoryDatabase("users")
+                    .UseInternalServiceProvider(p));
 
             services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<UserDbContext>();
 
-            var signinKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("Security Key"));
+            var signinKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("This is the secret password for the application"));
 
             services.AddAuthentication(opt =>
             {
@@ -67,6 +73,8 @@ namespace SimplyRencontre
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            app.UseAuthentication();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
