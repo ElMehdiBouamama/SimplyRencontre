@@ -13,6 +13,7 @@ using SimplyRencontre.Models;
 
 namespace SimplyRencontre.Controllers.API
 {
+    // TODO: change this class to match our website requirement
     public class Credentials
     {
         public string Email { get; set; }
