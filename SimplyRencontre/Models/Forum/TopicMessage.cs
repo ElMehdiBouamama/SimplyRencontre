@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SimplyRencontre.Models.Forum
 {
-    public class TopicMessages
+    public class TopicMessage
     {
         [Key]
         public long Id { get; set; }
@@ -18,7 +18,7 @@ namespace SimplyRencontre.Models.Forum
         public ApplicationUser Owner { get; set; }
         public Topic Topic { get; set; }
 
-        public TopicMessages()
+        public TopicMessage()
         {
             CreationTime = DateTime.Now;
             LastModified = null;

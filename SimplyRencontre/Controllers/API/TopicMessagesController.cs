@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,56 +13,57 @@ namespace SimplyRencontre.Controllers.API
 {
     [Produces("application/json")]
     [Route("api/[controller]")]
-    public class TopicMessagesController : Controller
+    public class TopicMessageController : Controller
     {
         private readonly ForumContext _context;
 
-        public TopicMessagesController(ForumContext context)
+        public TopicMessageController(ForumContext context)
         {
             _context = context;
         }
 
-        // GET: api/TopicMessages
+        // GET: api/TopicMessage
         [HttpGet]
-        public IEnumerable<TopicMessages> GetTopicMessages()
+        public IEnumerable<TopicMessage> GetTopicMessage()
         {
-            return _context.TopicMessages;
+            return _context.TopicMessage;
         }
 
-        // GET: api/TopicMessages/5
+        // GET: api/TopicMessage/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetTopicMessages([FromRoute] long id)
+        public async Task<IActionResult> GetTopicMessage([FromRoute] long id)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var topicMessages = await _context.TopicMessages.SingleOrDefaultAsync(m => m.Id == id);
+            var topicMessage = await _context.TopicMessage.SingleOrDefaultAsync(m => m.Id == id);
 
-            if (topicMessages == null)
+            if (topicMessage == null)
             {
                 return NotFound();
             }
 
-            return Ok(topicMessages);
+            return Ok(topicMessage);
         }
 
-        // PUT: api/TopicMessages/5
+        // PUT: api/TopicMessage/5
+        [Authorize]
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutTopicMessages([FromRoute] long id, [FromBody] TopicMessages topicMessages)
+        public async Task<IActionResult> PutTopicMessage([FromRoute] long id, [FromBody] TopicMessage topicMessage)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            if (id != topicMessages.Id)
+            if (id != topicMessage.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(topicMessages).State = EntityState.Modified;
+            _context.Entry(topicMessage).State = EntityState.Modified;
 
             try
             {
@@ -69,7 +71,7 @@ namespace SimplyRencontre.Controllers.API
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!TopicMessagesExists(id))
+                if (!TopicMessageExists(id))
                 {
                     return NotFound();
                 }
@@ -82,45 +84,55 @@ namespace SimplyRencontre.Controllers.API
             return NoContent();
         }
 
-        // POST: api/TopicMessages
-        [HttpPost]
-        public async Task<IActionResult> PostTopicMessages([FromBody] TopicMessages topicMessages)
+        // POST: api/TopicMessage
+        [HttpPost("{id}")]
+        public async Task<IActionResult> PostTopicMessage([FromRoute] long id, [FromBody] TopicMessage topicMessage)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            _context.TopicMessages.Add(topicMessages);
-            await _context.SaveChangesAsync();
+            var topic = await _context.Topic.FirstAsync(e => e.Id == id);
 
-            return CreatedAtAction("GetTopicMessages", new { id = topicMessages.Id }, topicMessages);
-        }
-
-        // DELETE: api/TopicMessages/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTopicMessages([FromRoute] long id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var topicMessages = await _context.TopicMessages.SingleOrDefaultAsync(m => m.Id == id);
-            if (topicMessages == null)
+            if(topic.Id != id)
             {
                 return NotFound();
             }
 
-            _context.TopicMessages.Remove(topicMessages);
+            topic.Messages.Add(topicMessage);
+            _context.Entry(topic).State = EntityState.Modified;
+            _context.TopicMessage.Add(topicMessage);
+
             await _context.SaveChangesAsync();
 
-            return Ok(topicMessages);
+            return CreatedAtAction("GetTopicMessage", new { id = topicMessage.Id }, topicMessage);
         }
 
-        private bool TopicMessagesExists(long id)
+        // DELETE: api/TopicMessage/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteTopicMessage([FromRoute] long id)
         {
-            return _context.TopicMessages.Any(e => e.Id == id);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var topicMessage = await _context.TopicMessage.SingleOrDefaultAsync(m => m.Id == id);
+            if (topicMessage == null)
+            {
+                return NotFound();
+            }
+
+            _context.TopicMessage.Remove(topicMessage);
+            await _context.SaveChangesAsync();
+
+            return Ok(topicMessage);
+        }
+
+        private bool TopicMessageExists(long id)
+        {
+            return _context.TopicMessage.Any(e => e.Id == id);
         }
     }
 }

@@ -16,6 +16,6 @@ namespace SimplyRencontre.Models
 
         public DbSet<Topic> Topic { get; set; }
         public DbSet<Category> Category { get; set; }
-        public DbSet<TopicMessages> TopicMessages { get; set; }
+        public DbSet<TopicMessage> TopicMessage { get; set; }
     }
 }

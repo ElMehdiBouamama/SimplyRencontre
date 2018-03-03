@@ -19,7 +19,7 @@ namespace SimplyRencontre.Models.Forum
         [StringLength(10000, MinimumLength = 3, ErrorMessage = "Le topic doit contenir entre 10 et 10 000 caractéres")]
         public string Content { get; set; }
 
-        public List<TopicMessages> Messages { get; set; }
+        public List<TopicMessage> Messages { get; set; }
 
         public ApplicationUser Owner { get; set; }
         public DateTime CreationDate { get; set; }
