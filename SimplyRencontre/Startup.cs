@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -39,11 +39,21 @@ namespace SimplyRencontre
                     .AllowAnyOrigin();
             }));
 
+            // TODO: Change those lines when going to production mode to connect to a true sqlDatabase provider on azure
+            #region // In memory database for testing purposes
+
             services
                 .AddEntityFrameworkInMemoryDatabase()
                 .AddDbContext<UserDbContext>((p, b) => b
                     .UseInMemoryDatabase("users")
                     .UseInternalServiceProvider(p));
+
+            services
+                .AddEntityFrameworkInMemoryDatabase()
+                .AddDbContext<ForumContext>((p, b) => b
+                    .UseInMemoryDatabase("forum")
+                    .UseInternalServiceProvider(p));
+            #endregion
 
             services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<UserDbContext>();
 
@@ -68,6 +78,9 @@ namespace SimplyRencontre
             });
 
             services.AddMvc();
+
+            services.AddDbContext<ForumContext>(options =>
+                    options.UseSqlServer(Configuration.GetConnectionString("ForumContext")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

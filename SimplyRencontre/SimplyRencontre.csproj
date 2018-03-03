@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <Folder Include="DabataseMigrations\" />
+    <Folder Include="Data\" />
   </ItemGroup>
 
   <Target Name="DebugRunWebpack" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('wwwroot\dist') ">
