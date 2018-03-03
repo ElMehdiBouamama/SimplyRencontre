@@ -51,17 +51,37 @@ namespace SimplyRencontre.Controllers.API
             }
             await signinManager.SignInAsync(user, isPersistent: false);
 
-            // TODO: We will have 1 claim per protected data page, so we need a claim factory with the abstract factory design pattern
+            return Ok(CreateToken(user));
+        }
+
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] Credentials credentials)
+        {
+            var result = await signinManager.PasswordSignInAsync(credentials.Email, credentials.Password, false, true);
+            if(!result.Succeeded)
+            {
+                return BadRequest();
+            }
+
+            var user = await userManager.FindByEmailAsync(credentials.Email);
+
+            return Ok(CreateToken(user));
+        }
+
+        private string CreateToken(ApplicationUser user)
+        {
             var claims = new Claim[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id)
             };
 
+            // TODO: We will have 1 claim per protected data page, so we need a claim factory with the abstract factory design pattern
             var signinKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("This is the secret password for the application"));
             var signinCredentials = new SigningCredentials(signinKey, SecurityAlgorithms.HmacSha256);
 
             var jwt = new JwtSecurityToken(signingCredentials: signinCredentials, claims: claims);
-            return Ok(new JwtSecurityTokenHandler().WriteToken(jwt));
+            return new JwtSecurityTokenHandler().WriteToken(jwt);
         }
     }
 }

@@ -9,6 +9,5 @@ namespace SimplyRencontre.Models
     public class ApplicationUser : IdentityUser
     {
         
-
     }
 }
